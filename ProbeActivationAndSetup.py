@@ -1,35 +1,39 @@
 import os
 import glob
 import time
+import sys
+import Adafruit_Python_DHT
 
-#load the kernel modules needed to handle the sensor
-os.system('modprobe w1-gpio')
-os.system('modprobe w1-therm')
+#git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+#cd Adafruit_Python_DHT
+sensor_args = { '11': Adafruit_DHT.DHT11,
+                                    '22':Adafruit_DHT.DHT22,
+                                    '2302': Adafruit_DHT.AM2302}
+if len(sys.argv) == 3 and sys.argv[1] in sensor_args:
+        sensor = sensor_args[sys.argv[1]]
+        pin = sys.argv[2]
+else:
+        print 'usage: sudo ./Adafruit.DHT.py [11|22|2302] GPIOpin#'
+        print 'example: sudo ./Adafruit_DHT.py 2302 4 - Read from an AM2302 ceonnected to GPIO #4'
 
+#Tries to grab the measurements again (15 times) every 2 seconds
 
-#finds the path of a sesor directory that starts with 28
-devicelist = glob.glob('/sys/bus/w1/devices/28*')
-#append the device file name to get the absolute path of the sensor
-devicefile = devicelist[0] + '/w1_slave'
+humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+temperature = temperature * 9/5.0 + 32
+if humidity is not None and temperature is not None:
+        print 'Temp={0:0.1f}* Humidity={1:0.1f}%'.format(temperature, humidity)
+else:
+        print 'Failed to get reading. Try again!'
+        sys.exit(1)
+#store the temperature in the database
+def log_temperature(temperature, humidity):
 
-#open the file representing the sensor
-def get_temp(devicefile)
-    try:
-        fileobj = open(devicefile, 'r')
-        lines = fileobj.readlines()
-        fileobj.close()
-    except:
-        return None
+    conn=sqlite3.connect(dbname)
+    curs=conn.cursor()
 
-        #get the status from the end of line 1
-        status = lines[0][-4:-1]
+    curs.execute("INERT INTO temps values(datetime('now'), (?))", (temperature))
 
-        #checks if the status is okay
-        if status=="YES":
-            print status
-            tempstr= lines[1][-6:-1]
-            tempvalue=float(tempstr)/1000
-            print "The temperature was" + tempvalue + "degrees celsius."
-            else
-            print "There was an error"
-            return None
+    #commit the changes
+    conn.commit()
+
+    conn.close()
