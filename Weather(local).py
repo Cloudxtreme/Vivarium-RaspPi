@@ -26,13 +26,14 @@ else:
         print 'Failed to get reading. Try again!'
         sys.exit(1)
 #store the temperature in the database
+
 def log_temperature(temperature, humidity):
 
     conn=sqlite3.connect(dbname)
     curs=conn.cursor()
-
+    #inserts the temperature and humidity into the tables
     curs.execute("INERT INTO temps values(datetime('now'), (?))", (temperature))
-
+    curs.execute("INERT INTO humid values(datetime('now'), (?))", (humidity))
     #commit the changes
     conn.commit()
 
