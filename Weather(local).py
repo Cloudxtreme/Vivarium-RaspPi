@@ -3,7 +3,7 @@ import glob
 import time
 import sys
 import Adafruit_Python_DHT
-
+#make sure it has WiringPi installed
 #git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 #cd Adafruit_Python_DHT
 sensor_args = { '11': Adafruit_DHT.DHT11,
@@ -32,8 +32,8 @@ def log_temperature(temperature, humidity):
     conn=sqlite3.connect(dbname)
     curs=conn.cursor()
     #inserts the temperature and humidity into the tables
-    curs.execute("INERT INTO temps values(datetime('now'), (?))", (temperature))
-    curs.execute("INERT INTO humid values(datetime('now'), (?))", (humidity))
+    curs.execute("INSERT INTO temps values(datetime('now'), (?))", (temperature))
+    curs.execute("INSERT INTO humid values(datetime('now'), (?))", (humidity))
     #commit the changes
     conn.commit()
 
